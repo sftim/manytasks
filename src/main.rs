@@ -127,7 +127,7 @@ fn parse_arguments() -> Result<usize> {
 
 fn main() -> Result<()> {
     const TARGET_NICENESS: u8 = 15;
-    const SLEEP_DURATION: Duration = Duration::from_secs(15);
+    const SLEEP_DURATION: Duration = Duration::from_secs(1800);
     const WORKERS_PER_PROCESS: usize = 8192;
 
     let mut sleeper_count = parse_arguments()?;
