@@ -1,0 +1,20 @@
+[package]
+name = "manytasks"
+version = "0.1.0"
+edition = "2018"
+license = "MIT"
+authors = [
+    # Alphabetical by surname
+    "Tim Bannister <tim@scalefactory.com>",
+]
+categories = [
+    "command-line-utilities",
+]
+exclude = [
+    ".github",
+    ".gitignore",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
