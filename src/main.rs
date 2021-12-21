@@ -3,6 +3,7 @@ use anyhow::{Context, Result,anyhow};
 use nix::sys::wait::{wait,WaitStatus};
 use nix::unistd::fork;
 use nix::unistd::ForkResult::{Child, Parent};
+use num_cpus;
 use std::cmp;
 use std::convert::TryInto;
 use std::thread;
@@ -67,7 +68,6 @@ fn make_many_sleepers(count: usize, duration: Duration, start_time: Instant) -> 
   }
 
   // wait for them all
-  eprintln!("Waiting for sleeping children");
   for sleeper in sleepers {
     let _ = sleeper.0.join(); // ignore errors here
   }
@@ -128,11 +128,11 @@ fn parse_arguments() -> Result<usize> {
 fn main() -> Result<()> {
     const TARGET_NICENESS: u8 = 15;
     const SLEEP_DURATION: Duration = Duration::from_secs(1800);
-    const WORKERS_PER_PROCESS: usize = 8192;
+    const MAX_WORKERS_PER_PROCESS: usize = 8192;
 
     let mut sleeper_count = parse_arguments()?;
 
-    let mut workers = Vec::with_capacity(sleeper_count / WORKERS_PER_PROCESS);
+    let worker_count = cmp::min(sleeper_count / MAX_WORKERS_PER_PROCESS, num_cpus::get());
 
     setup(TARGET_NICENESS)?;
 
@@ -140,8 +140,9 @@ fn main() -> Result<()> {
 
     eprintln!("Creating {} threads for {} seconds", sleeper_count, SLEEP_DURATION.as_secs());
     // set up n workers
+    let mut workers = Vec::with_capacity(worker_count);
     while sleeper_count > 0 {
-      let sleepers_to_make = cmp::min(sleeper_count, WORKERS_PER_PROCESS);
+      let sleepers_to_make = cmp::min(sleeper_count, MAX_WORKERS_PER_PROCESS);
       sleeper_count -= sleepers_to_make;
 
       let pid = unsafe { fork() }.context("Failed to fork worker process")?;
